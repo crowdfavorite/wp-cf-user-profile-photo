@@ -246,9 +246,9 @@ class cf_User_Profile_Photo {
 			// If there is an avatar size set that matches, use it.
 			if ($size == $value) { $size_key = $key; }
 		}
-		// Fallback for size key
+		// If there is no size key, use the default avatar.
 		if (!$size_key) {
-			$size_key = 'thumbnail';
+			return $avatar;
 		}
 		
 		$id = $this->get_id_by_id_or_email($id_or_email);
