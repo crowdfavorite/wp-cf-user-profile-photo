@@ -231,10 +231,11 @@ class cf_User_Profile_Photo {
 	 * @param int $size size of avatar (square)
 	 */
 	function add_avatar_size($size) {
+		$size = (int) $size;
 		// Set image size to pull
 		if (!in_array($size, $this->image_sizes)) {
 			$this->image_sizes[$this->prefix . 'image_' . $size] = $size;
-			add_image_size($this->prefix . 'image_' . $size, (int) $size, (int) $size, true);
+			add_image_size($this->prefix . 'image_' . $size, $size, $size, true);
 		}
 	}
 	
