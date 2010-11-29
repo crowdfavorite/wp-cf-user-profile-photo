@@ -1,0 +1,11 @@
+# CF User Profile Photo Changelog
+
+## 0.6.1
+- Updated Version Number
+
+## 0.6
+- Notes Here
+
+## 0.5
+- Notes Here
+
