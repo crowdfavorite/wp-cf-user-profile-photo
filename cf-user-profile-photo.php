@@ -268,14 +268,13 @@ class cf_User_Profile_Photo {
 		if ( is_numeric($id_or_email) ) {
 			$id = (int) $id_or_email;
 		} // It's a comment object: get the ID.
-		elseif ( is_object($id_or_email) && !empty($id_or_email->user_id) ) {
-			$id = (int) $id_or_email->user_id;
+		elseif ( is_object($id_or_email) && property_exists($id_or_email, 'user_id') ) {
+			$id = $id_or_email->user_id;
 		} // It's an email: get the ID.
 		else {
 			$user = get_user_by_email($id_or_email);
-			$id = (int) $user->user_id;
+			$id = $user->user_id;
 		}
-		
 		return $id;
 	}
 }
