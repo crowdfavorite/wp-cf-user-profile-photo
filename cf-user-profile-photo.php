@@ -68,7 +68,9 @@ class cf_User_Profile_Photo {
 						&& !empty($_FILES[$this->prefix.'photo_upload']['size']) // We have something in that field
 						&& !empty($_POST['user_id']) // We have a user ID to attach meta to
 						) {
-							
+						
+						global $wpdb;
+						
 						// Let WP handle the file upload
 						$r = media_handle_upload($this->prefix.'photo_upload', 0);
 						if (!$this->is_valid_media_result($r)) {
@@ -79,7 +81,11 @@ class cf_User_Profile_Photo {
 						
 						// Add the media image file ID to user meta
 						$user_id = intval($_POST['user_id']);
-						update_user_meta($user_id, $this->meta_name, $r);
+						update_user_meta(
+							$user_id,
+							$this->meta_name.'_'.$wpdb->blogid,
+							$r
+						);
 					}
 					break;
 				case 'delete_profile_photo':
@@ -95,13 +101,21 @@ class cf_User_Profile_Photo {
 						$user_id = intval($_POST['user_id']);
 						
 						// Get the ID of the photo 
-						$photo_id = get_user_meta($user_id, $this->meta_name, true);
+						global $wpdb;
+						$photo_id = get_user_meta(
+							$user_id,
+							$this->meta_name.'_'.$wpdb->blogid,
+							true
+						);
 						
 						// really delete the photo, not just trash it
 						$del = wp_delete_post($photo_id, true); 
 						if ($del !== false) {
 							// detach the photo ID from the user
-							$r = delete_user_meta($user_id, $this->meta_name); 
+							$r = delete_user_meta(
+								$user_id,
+								$this->meta_name.'_'.$wpdb->blogid
+							);
 						}
 						echo $r;
 						exit;
