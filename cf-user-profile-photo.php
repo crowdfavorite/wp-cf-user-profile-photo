@@ -3,7 +3,7 @@
 Plugin Name: CF User Profile Photo
 Plugin URI: 
 Description: Allows users to upload their own photo for their profile.  Photo is managed in the profile edit screen.
-Version: 0.6.1
+Version: 0.6.2
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -17,7 +17,7 @@ class cf_User_Profile_Photo {
 		$this->meta_name = 'cf_user_profile_photo';
 		$this->text_domain = 'cfupp';
 		$this->action = $this->prefix.'cf_action';
-		$this->ver = '0.6.1';
+		$this->ver = '0.6.2';
 		
 		// Define the pages we want action taken on
 		$this->admin_pages = array(
@@ -207,13 +207,52 @@ class cf_User_Profile_Photo {
 	 * @return mixed: string on success, bool false on failure
 	 */
 	function get_user_photo_url($user_id, $size = 'thumbnail') {
+		global $wpdb;
 		$url = false;
-		$photo_id = get_user_meta($user_id, $this->meta_name, true);
-		if ($photo_id) {
-			$r = wp_get_attachment_image_src($photo_id, $size);
-			if (is_array($r) && !empty($r[0])) {
-				$url = $r[0];
+
+		$photo_id = get_user_meta(
+			$user_id,
+			$this->meta_name.'_'.$wpdb->blogid,
+			true
+		);
+		
+		if (empty($photo_id)) {
+			// look at old data store
+			$photo_id = get_user_meta($user_id, $this->meta_name, true);
+			
+			if ($photo_id
+				&& ($url = $this->get_photo_url($photo_id, $size)) !== false
+				) {
+				// Add our new data format
+				update_user_meta(
+					$user_id,
+					$this->meta_name.'_'.$wpdb->blogid,
+					$photo_id
+				);
+				// Delete previous format
+				delete_user_meta($user_id, $this->meta_name);
 			}
+		}
+		else {
+			$url = $this->get_photo_url($photo_id, $size);
+		}
+		
+		return $url;
+	}
+
+
+	/**
+	 * Fetches the attachment URL by post (photo) ID.
+	 *
+	 * @param int $photo_id 
+	 * @param string $size 
+	 * @return mixed: string on success, bool false on failure
+	 */
+	protected function get_photo_url($photo_id, $size) {
+		$url = false;
+		$r = wp_get_attachment_image_src($photo_id, $size);
+		if (is_array($r) && !empty($r[0])) {
+			$url = $r[0];
 		}
 		return $url;
 	}
