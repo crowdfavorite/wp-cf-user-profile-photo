@@ -1,5 +1,8 @@
 # CF User Profile Photo Changelog
 
+## 0.6.3 (current trunk)
+- very slight performance enhancement.
+
 ## 0.6.2
 - Updating photo data store to new format
 
