@@ -21,8 +21,8 @@ class cf_User_Profile_Photo {
 		
 		// Define the pages we want action taken on
 		$this->admin_pages = array(
-			'/wp-admin/profile.php', // profile page
-			'/wp-admin/user-edit.php', // editing another user page
+			'profile.php', // profile page
+			'user-edit.php', // editing another user page
 		);
 	}
 	
@@ -40,7 +40,8 @@ class cf_User_Profile_Photo {
 			add_action('edit_user_profile', array($this, 'photo_form'));
 			
 			// Only include our resources when on the right page
-			if (in_array($_SERVER['SCRIPT_NAME'], $this->admin_pages)) {
+			global $pagenow;
+			if (in_array($pagenow, $this->admin_pages)) {
 				add_action('init', array($this, 'get_resources'));
 			}
 		}
