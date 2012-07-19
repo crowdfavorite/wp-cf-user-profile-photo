@@ -38,7 +38,9 @@ class cf_User_Profile_Photo {
 			
 			add_action('show_user_profile', array($this, 'photo_form'));
 			add_action('edit_user_profile', array($this, 'photo_form'));
-			
+
+			add_action('user_edit_form_tag', array($this, 'output_profile_form_enctype'));
+
 			// Only include our resources when on the right page
 			global $pagenow;
 			if (in_array($pagenow, $this->admin_pages)) {
@@ -333,6 +335,10 @@ class cf_User_Profile_Photo {
 			$id = $user->user_id;
 		}
 		return $id;
+	}
+
+	function output_profile_form_enctype() {
+		echo ' enctype="multipart/form-data"';
 	}
 }
 $cfupp = new cf_User_Profile_Photo;
