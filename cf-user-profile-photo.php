@@ -1,31 +1,25 @@
 <?php
 /*
 Plugin Name: CF User Profile Photo
-Plugin URI: 
+Plugin URI:
 Description: Allows users to upload their own photo for their profile.  Photo is managed in the profile edit screen.
-Version: 0.6.3-trunk
+Version: 0.7
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
 
 class cf_User_Profile_Photo {
 	protected $image_sizes = array();
-	
+
 	function __construct() {
 		// Assign our nonce prefix, so we don't have conflicts with other cf_action plugins
 		$this->prefix = 'cfupp';
 		$this->meta_name = 'cf_user_profile_photo';
 		$this->text_domain = 'cfupp';
 		$this->action = $this->prefix.'cf_action';
-		$this->ver = '0.6.3-trunk';
-		
-		// Define the pages we want action taken on
-		$this->admin_pages = array(
-			'profile.php', // profile page
-			'user-edit.php', // editing another user page
-		);
+		$this->ver = '0.7';
 	}
-	
+
 	/**
 	 * Handler for adding our various actions, etc.
 	 *
@@ -35,18 +29,18 @@ class cf_User_Profile_Photo {
 		if (is_admin()) {
 			add_action('init', array($this, 'early_request_handler'), 1);
 			add_action('init', array($this, 'request_handler'));
-			
+
 			add_action('show_user_profile', array($this, 'photo_form'));
 			add_action('edit_user_profile', array($this, 'photo_form'));
-			
+
+			add_action('user_edit_form_tag', array($this, 'output_profile_form_enctype'));
+
 			// Only include our resources when on the right page
-			global $pagenow;
-			if (in_array($pagenow, $this->admin_pages)) {
-				add_action('init', array($this, 'get_resources'));
-			}
+			add_action('admin_head-profile.php', array($this, 'get_resources'));
+			add_action('admin_head-user-edit.php', array($this, 'get_resources'));
 		}
 	}
-	
+
 	/**
 	 * Handles Photo uploads
 	 *
@@ -69,9 +63,9 @@ class cf_User_Profile_Photo {
 						&& !empty($_FILES[$this->prefix.'photo_upload']['size']) // We have something in that field
 						&& !empty($_POST['user_id']) // We have a user ID to attach meta to
 						) {
-						
+
 						global $wpdb;
-						
+
 						// Let WP handle the file upload
 						$r = media_handle_upload($this->prefix.'photo_upload', 0);
 						if (!$this->is_valid_media_result($r)) {
@@ -79,7 +73,7 @@ class cf_User_Profile_Photo {
 							// Do some admin notice here
 							return;
 						}
-						
+
 						// Add the media image file ID to user meta
 						$user_id = intval($_POST['user_id']);
 						update_user_meta(
@@ -97,20 +91,20 @@ class cf_User_Profile_Photo {
 						) {
 						// Default to failure...hmmmm
 						$r = false;
-						
+
 						// Get our user ID
 						$user_id = intval($_POST['user_id']);
-						
-						// Get the ID of the photo 
+
+						// Get the ID of the photo
 						global $wpdb;
 						$photo_id = get_user_meta(
 							$user_id,
 							$this->meta_name.'_'.$wpdb->blogid,
 							true
 						);
-						
+
 						// really delete the photo, not just trash it
-						$del = wp_delete_post($photo_id, true); 
+						$del = wp_delete_post($photo_id, true);
 						if ($del !== false) {
 							// detach the photo ID from the user
 							$r = delete_user_meta(
@@ -125,19 +119,19 @@ class cf_User_Profile_Photo {
 			}
 		}
 	}
-	
+
 	/**
 	 * Validate our upload result:
 	 * Must not be empty (might be a zero or false on failure)
 	 * Must not be a WP_Error
 	 *
-	 * @param array $r 
+	 * @param array $r
 	 * @return bool
 	 */
 	function is_valid_media_result($r) {
 		return !empty($r) && !is_wp_error($r);
 	}
-	
+
 	/**
 	 * Handles early requests for mostly-static items like JS and CSS
 	 *
@@ -146,13 +140,13 @@ class cf_User_Profile_Photo {
 	function early_request_handler() {
 		if (!empty($_GET[$this->action])) {
 			switch ($_GET[$this->action]) {
-				case 'js': 
+				case 'js':
 					$this->js();
 					exit;
 			}
 		}
 	}
-	
+
 	/**
 	 * If we have CSS/JS to include, here's the place
 	 *
@@ -165,13 +159,13 @@ class cf_User_Profile_Photo {
 		global $wp_scripts;
 		$wp_scripts->localize($this->prefix.'profile-photo', 'cfuppObj', array(
 			'prefix' => $this->prefix,
-			'deleteEndpoint' => admin_url(), 
+			'deleteEndpoint' => admin_url(),
 			'deleteLinkId' => 'delete_profile_photo',
 			'deleteErrorMsg' => __('An error occurred trying to remove your profile photo.', $this->text_domain),
 			'cf_action' => $this->action,
 		));
 	}
-	
+
 	/**
 	 * Outputs the JavaScript
 	 *
@@ -187,7 +181,7 @@ class cf_User_Profile_Photo {
 	/**
 	 * Outputs the profile page form for the photo
 	 *
-	 * @param obj $profileuser 
+	 * @param obj $profileuser
 	 * @return void
 	 */
 	function photo_form($profileuser) {
@@ -195,7 +189,7 @@ class cf_User_Profile_Photo {
 		?>
 		<h3><?php esc_html_e('Profile Photo', $this->text_domain); ?></h3>
 		<table class="form-table">
-			<?php 
+			<?php
 			if ($photo_url) {
 				?>
 				<tr id="current_photo_row">
@@ -214,11 +208,11 @@ class cf_User_Profile_Photo {
 		<?php
 		wp_nonce_field($this->prefix.'uploading_user_photo', $this->prefix.'user_photo_nonce');
 	}
-	
+
 	/**
 	 * Returns the URL for the profile photo
 	 *
-	 * @param int $user_id 
+	 * @param int $user_id
 	 * @return mixed: string on success, bool false on failure
 	 */
 	function get_user_photo_url($user_id, $size = 'thumbnail') {
@@ -230,11 +224,11 @@ class cf_User_Profile_Photo {
 			$this->meta_name.'_'.$wpdb->blogid,
 			true
 		);
-		
+
 		if (empty($photo_id)) {
 			// look at old data store
 			$photo_id = get_user_meta($user_id, $this->meta_name, true);
-			
+
 			if ($photo_id
 				&& ($url = $this->get_photo_url($photo_id, $size)) !== false
 				) {
@@ -251,7 +245,7 @@ class cf_User_Profile_Photo {
 		else {
 			$url = $this->get_photo_url($photo_id, $size);
 		}
-		
+
 		return $url;
 	}
 
@@ -259,8 +253,8 @@ class cf_User_Profile_Photo {
 	/**
 	 * Fetches the attachment URL by post (photo) ID.
 	 *
-	 * @param int $photo_id 
-	 * @param string $size 
+	 * @param int $photo_id
+	 * @param string $size
 	 * @return mixed: string on success, bool false on failure
 	 */
 	protected function get_photo_url($photo_id, $size) {
@@ -271,7 +265,7 @@ class cf_User_Profile_Photo {
 		}
 		return $url;
 	}
-	
+
 	/**
 	 * Filter the get_avatar function
 	 * @param int $image_size the image size (pixels) to set custom avatars at.
@@ -280,7 +274,7 @@ class cf_User_Profile_Photo {
 		// Add filter to get_avatar.
 		add_filter('get_avatar', array($this, 'filter_get_avatar'), 10, 5);
 	}
-	
+
 	/**
 	 * @param int $size size of avatar (square)
 	 */
@@ -292,7 +286,7 @@ class cf_User_Profile_Photo {
 			add_image_size($this->prefix . 'image_' . $size, $size, $size, true);
 		}
 	}
-	
+
 	function filter_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 		// Get size key
 		$size_key = '';
@@ -307,20 +301,20 @@ class cf_User_Profile_Photo {
 		if (!$size_key) {
 			return $avatar;
 		}
-		
+
 		$id = $this->get_id_by_id_or_email($id_or_email);
 		$src = $this->get_user_photo_url($id, $size_key);
 
 		if ($src) {
 			$avatar = preg_replace('/src=("[^"]*"|\'[^\']*\')/', 'src="'.$src.'"', $avatar);
 		}
-		
+
 		return $avatar;
 	}
-	
+
 	function get_id_by_id_or_email($id_or_email) {
 		$id = 0;
-		
+
 		// It's an ID. We're good.
 		if ( is_numeric($id_or_email) ) {
 			$id = (int) $id_or_email;
@@ -333,6 +327,10 @@ class cf_User_Profile_Photo {
 			$id = $user->user_id;
 		}
 		return $id;
+	}
+
+	function output_profile_form_enctype() {
+		echo ' enctype="multipart/form-data"';
 	}
 }
 $cfupp = new cf_User_Profile_Photo;
