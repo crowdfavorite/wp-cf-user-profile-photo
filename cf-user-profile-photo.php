@@ -17,12 +17,6 @@ class cf_User_Profile_Photo {
 		$this->meta_name = 'cf_user_profile_photo';
 		$this->text_domain = 'cfupp';
 		$this->action = $this->prefix.'cf_action';
-		
-		// Define the pages we want action taken on
-		$this->admin_pages = array(
-			'profile.php', // profile page
-			'user-edit.php', // editing another user page
-		);
 		$this->ver = '0.7';
 	}
 	
