@@ -3,7 +3,7 @@
 Plugin Name: CF User Profile Photo
 Plugin URI: 
 Description: Allows users to upload their own photo for their profile.  Photo is managed in the profile edit screen.
-Version: 0.6.3-trunk
+Version: 0.7
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -17,13 +17,13 @@ class cf_User_Profile_Photo {
 		$this->meta_name = 'cf_user_profile_photo';
 		$this->text_domain = 'cfupp';
 		$this->action = $this->prefix.'cf_action';
-		$this->ver = '0.6.3-trunk';
 		
 		// Define the pages we want action taken on
 		$this->admin_pages = array(
 			'profile.php', // profile page
 			'user-edit.php', // editing another user page
 		);
+		$this->ver = '0.7';
 	}
 	
 	/**

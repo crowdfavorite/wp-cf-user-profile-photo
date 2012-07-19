@@ -1,6 +1,7 @@
 # CF User Profile Photo Changelog
 
-## 0.6.3 (current trunk)
+## 0.7
+- *bugfix* output the form enctype=multipart/form_data on the profile page, so image submits
 - very slight performance enhancement.
 
 ## 0.6.2
