@@ -305,9 +305,9 @@ class cf_User_Profile_Photo {
 		$id = $this->get_id_by_id_or_email($id_or_email);
 		$src = $this->get_user_photo_url($id, $size_key);
 
-		if ($src) {
-			$avatar = preg_replace('/src=("[^"]*"|\'[^\']*\')/', 'src="'.$src.'"', $avatar);
-			$avatar = preg_replace('/src=("[^"]*"|\'[^\']*\')/', 'srcset="'.$src.'"', $avatar);
+		if ( $src ) {
+			$avatar = preg_replace( '/src=("[^"]*"|\'[^\']*\')/', 'src="' . $src . '"', $avatar );
+			$avatar = preg_replace( '/src=("[^"]*"|\'[^\']*\')/', 'srcset="' . $src . '"', $avatar );
 		}
 
 		return $avatar;
