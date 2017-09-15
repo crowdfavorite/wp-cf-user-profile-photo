@@ -307,6 +307,7 @@ class cf_User_Profile_Photo {
 
 		if ($src) {
 			$avatar = preg_replace('/src=("[^"]*"|\'[^\']*\')/', 'src="'.$src.'"', $avatar);
+			$avatar = preg_replace('/src=("[^"]*"|\'[^\']*\')/', 'srcset="'.$src.'"', $avatar);
 		}
 
 		return $avatar;
